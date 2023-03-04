@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:request-config name="HTTP_Request_configuration-3" doc:name="HTTP Request configuration" doc:id="83471485-13cf-4ba3-b712-c359cdb8a1ae" >
+		<http:request-connection host="${http.transNational.requester.host}" port="${http.transNational.requester.port}" />
+	</http:request-config>
+	<http:request-config name="HTTP_Request_configuration-4" doc:name="HTTP Request configuration" doc:id="0f877200-3c5a-450d-a857-11a0d6c46e2d" >
+		<http:request-connection host="${http.firstCoach.requester.host}" port="${http.firstCoach.requester.port}" />
+	</http:request-config>
+	<flow name="getSchedulesProcessAPIFlow" doc:id="a1e45969-d224-4e48-95e4-7010dbe23b45" >
+		<logger level="INFO" doc:name="request entered getSchedules flow" doc:id="4f3d1ba9-fae0-4d85-805b-b1b951070ee6" message="request entered getSchedules flow"/>
+		<set-variable value="#[attributes.queryParams.companyCode]" doc:name="companyCode" doc:id="fb63d077-3c0e-4907-8590-76ea8154019f" variableName="companyCode"/>
+		<choice doc:name="transportCompany" doc:id="eec55a25-0388-49cc-8b38-da255c11a903" >
+			<when expression='#[vars.companyCode == "transNational"]'>
+				<logger level="INFO" doc:name="request received to fetch Schedulesfrom transnational" doc:id="df10968a-3a42-4243-bb7b-9673397b6b6f" message="request received to fetch Schedules from transnational"/>
+				<set-payload value='[{"Schedules":{"Availability":"at this moment there are no schedules available for the request"}}]' doc:name="No schedules available" doc:id="6460838f-76bb-4f4d-acbd-da9a2c15f5f3" mimeType="application/json"/>
+				<ee:transform doc:name="Transform Message" doc:id="1e24ba13-ef8e-48ef-955e-842b09b9d670">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload map(key,id)->{
+	schedules:{
+		availability:key.Schedules.Availability
+		}	
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<logger level="INFO" doc:name="No schedules available for the request at the moment" doc:id="063c84f7-0c0a-41a4-b222-b786c99e9481" message="No schedules available for the request at the moment"/>
+			</when>
+			<when expression='#[vars.companyCode == "firstCoach"]'>
+				<logger level="INFO" doc:name="request received to fetch Schedules from firstCoach" doc:id="439bb603-3a33-479d-8644-3c5e27f5065f" message="request received to fetch Schedules from firstCoach"/>
+				<http:request method="GET" doc:name="fetch Schedules from firstCoach" doc:id="8e35b86d-1fda-4494-b676-b83cb5a24c99" config-ref="HTTP_Request_configuration-2" path="/api/car/firstCoach/schedules?departureLocationCode=scg&amp;destinationLocationCode=vfg">
+					<http:query-params ><![CDATA[#[output application/java
+---
+{
+	companyCode : attributes.queryParams.companyCode
+}]]]></http:query-params>
+				</http:request>
+				<logger level="INFO" doc:name="Available schedules have been fetched." doc:id="620c0fea-ddeb-4a6a-af27-935d2dda202a" message="Available schedules have been fetched."/>
+			</when>
+			<otherwise>
+				<logger level="INFO" doc:name="if the company name not mentioned fetch Schedules from both the companies" doc:id="b3ad75b5-6b6b-4952-b337-4a5ae49bfc2a" message="if the company name not mentioned fetch Schedules from both the companies" />
+				<scatter-gather doc:name="if the company name not mentioned fetch Schedules from both the companies" doc:id="a3bda240-a049-41b5-9957-b7f9ce09196e">
+					<route>
+						<set-payload value='[{"Schedules":{"Availability":"at this moment there are no schedules available for the request"}}]' doc:name="No schedules available" doc:id="3d39f5fa-184f-4348-8a3f-f12078093b6f" mimeType="application/json" />
+						<ee:transform doc:name="Transform Message" doc:id="38d94877-0e42-410c-8e50-b35f42bbea6b" >
+							<ee:message >
+								<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload map(key,id)->{
+	schedules:{
+		availability:key.Schedules.Availability
+		}	
+}]]></ee:set-payload>
+							</ee:message>
+						</ee:transform>
+						<logger level="INFO" doc:name="No schedules available for the request at the moment" doc:id="353f6f0b-f2a0-42ad-b55e-97ea21979ee4" message="No schedules available for the request at the moment" />
+						<ee:transform doc:name="Transform Message" doc:id="b03b0e44-609c-4c36-b7c4-a876f3d1d7b0" >
+							<ee:message >
+								<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+							</ee:message>
+						</ee:transform>
+					</route>
+					<route>
+						<http:request method="GET" doc:name="fetch Schedules from firstCoach" doc:id="d00d3b5b-9209-4d17-96c5-d36e6d8b948d" config-ref="HTTP_Request_configuration-2" path="/api/car/firstCoach/schedules?departureLocationCode=scg&amp;destinationLocationCode=vfg">
+							<http:query-params ><![CDATA[#[output application/java
+---
+{
+	companyCode : firstCoach
+}]]]></http:query-params>
+						</http:request>
+						<ee:transform doc:name="Transform Message" doc:id="f3ae2d14-4300-4cad-8389-05101b53ea7d" >
+							<ee:message >
+								<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+							</ee:message>
+						</ee:transform>
+					</route>
+				</scatter-gather>
+				<logger level="INFO" doc:name="Available schedules have been fetched" doc:id="d212d3b5-513b-4e6c-b161-331470f2714d" message="Available schedules have been fetched" />
+				<ee:transform doc:name="Transform Message" doc:id="a6c7866d-c577-4b48-b71e-839be011cdda" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</otherwise>
+		</choice>
+	</flow>
+</mule>

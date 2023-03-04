@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
+	<flow name="getScheduleFlow" doc:id="c1ab27b1-33be-482d-9a6d-aba3e177e204" >
+		<logger level="INFO" doc:name="Request received schedule flow " doc:id="d5a6ffdb-e27f-4dce-ac87-7d73c8363a2e" message="Request received schedule flow "/>
+		<set-payload doc:name="available Schedule" doc:id="ccd3d9b7-15cb-4161-ac91-6c390832e0ca" mimeType="application/json" value='[{ "departureSchedules": [ { "availableSeats": 20, "departureDateTime": "2019-04-30T16:41:41.090Z", "travelRoute": { "destinationLocation": { "locationCode": "KLG-MY" }, "originLocation": { "locationCode": "BEN-SG" } } }, { "availableSeats": 30, "departureDateTime": "2019-04-30T16:41:41.090Z", "travelRoute": { "destinationLocation": { "locationCode": "KLG-MY" }, "originLocation": { "locationCode": "BL-SG" } } } ] }]'/>
+	</flow>
+</mule>

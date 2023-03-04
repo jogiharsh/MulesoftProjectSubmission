@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:request-config name="HTTP_Request_configuration-1" doc:name="HTTP Request configuration" doc:id="62ead4e6-54d6-4901-ad5c-df0a4b3b4bdc" responseTimeout="90000">
+		<http:request-connection host="${http.transNational.requester.host}" port="${http.transNational.requester.port}" />
+	</http:request-config>
+	<http:request-config name="HTTP_Request_configuration-2" doc:name="HTTP Request configuration" doc:id="e8e3142f-316d-46a3-9693-2641c3f89626" >
+		<http:request-connection host="${http.firstCoach.requester.host}" port="${http.firstCoach.requester.port}"/>
+	</http:request-config>
+	<flow name="getRoutessProcessAPI-Flow" doc:id="a1e45969-d224-4e48-95e4-7010dbe23b45" >
+		<logger level="INFO" doc:name="request entered getRoutes flow" doc:id="4f3d1ba9-fae0-4d85-805b-b1b951070ee6" message="request entered getRoutes flow"/>
+		<set-variable value="#[attributes.queryParams.companyCode]" doc:name="companyCode" doc:id="fb63d077-3c0e-4907-8590-76ea8154019f" variableName="companyCode"/>
+		<choice doc:name="transportCompany" doc:id="eec55a25-0388-49cc-8b38-da255c11a903" >
+			<when expression='#[vars.companyCode == "transNational"]'>
+				<logger level="INFO" doc:name="request received to fetch routes from transnational" doc:id="df10968a-3a42-4243-bb7b-9673397b6b6f" message="request received to fetch routes from transnational"/>
+				<http:request method="GET" doc:name="fetch routes from transNational" doc:id="a5d61f50-4b85-41b9-a905-6cfc81e8c35e" config-ref="HTTP_Request_configuration-1" path="/api/car/transnational/routes?originLocation=scg&amp;destinationLocation=vfg">
+					<http:query-params><![CDATA[#[output application/java
+---
+{
+	companyCode : attributes.queryParams.companyCode
+}]]]></http:query-params>
+				</http:request>
+				<logger level="INFO" doc:name="Available routes have been fetched" doc:id="65d12107-7aee-4513-99b3-f05279e33f60" message="Available routes have been fetched" />
+			</when>
+			<when expression='#[vars.companyCode == "firstCoach"]'>
+				<logger level="INFO" doc:name="request received to fetch routes from firstCoach" doc:id="439bb603-3a33-479d-8644-3c5e27f5065f" message="request received to fetch routes from firstCoach"/>
+				<http:request method="GET" doc:name="fetch routes from firstCoach" doc:id="8e35b86d-1fda-4494-b676-b83cb5a24c99" path="/api/car/firstCoach/routes?departureLocationCode=scg&amp;destinationLocationCode=vfg" config-ref="HTTP_Request_configuration-2">
+					<http:query-params><![CDATA[#[output application/java
+---
+{
+	companyCode : attributes.queryParams.companyCode
+}]]]></http:query-params>
+				</http:request>
+				<logger level="INFO" doc:name="Available routes have been fetched" doc:id="9824fa91-fd49-46d7-8313-9e53cde7fdaa" message="Available routes have been fetched" />
+			</when>
+			<otherwise>
+				<logger level="INFO" doc:name="if the company name not mentioned fetch routes from both the companies" doc:id="ec1e7530-8777-4b4d-9cca-999da3e39f5d" message="if the company name not mentioned fetch routes from both the companies"/>
+				<scatter-gather doc:name="if the company name not mentioned fetch routes from both the companies" doc:id="a3bda240-a049-41b5-9957-b7f9ce09196e" >
+					<route >
+						<http:request method="GET" doc:name="fetch routes from transNational" doc:id="66b94fda-a7ba-4572-a917-11c03fb8d250" config-ref="HTTP_Request_configuration-1" path="/api/car/transNational/routes?departureLocationCode=scg&amp;destinationLocationCode=vfg">
+							<http:query-params><![CDATA[#[output application/java
+---
+{
+	companyCode : attributes.queryParams.companyCode
+}]]]></http:query-params>
+						</http:request>
+					</route>
+					<route >
+						<http:request method="GET" doc:name="fetch routes from firstCoach" doc:id="d00d3b5b-9209-4d17-96c5-d36e6d8b948d" config-ref="HTTP_Request_configuration-2" path="/api/car/firstCoach/routes?departureLocationCode=scg&amp;destinationLocationCode=vfg">
+							<http:query-params><![CDATA[#[output application/java
+---
+{
+	companyCode : attributes.queryParams.companyCode
+}]]]></http:query-params>
+						</http:request>
+					</route>
+				</scatter-gather>
+				<logger level="INFO" doc:name="Available routes have been fetched" doc:id="6e26707f-e065-4a69-b591-638f67f1a673" message="Available routes have been fetched"/>
+			</otherwise>
+		</choice>
+	</flow>
+</mule>

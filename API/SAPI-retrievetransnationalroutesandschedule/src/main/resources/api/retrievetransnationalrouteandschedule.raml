@@ -1,0 +1,52 @@
+#%RAML 1.0
+title: RetrieveTransNationalRouteAndSchedule
+description: To retrieve route list from TransNational. Routes list are usually static and are only updated once a month.
+types:
+  getRoutes: !include datatype/200-dataType.raml
+
+/{transportType}:
+  /{transportCompany}:
+    /routes:
+      get:
+        headers:
+          companyCode:
+            required: false
+            type: string
+        queryParameters:
+          originLocation:
+            required: true
+            type: string
+          destinationLocation:
+            required: true
+            type: string
+        responses:
+          200:
+            body:
+              application/json:
+                type: getRoutes
+                example: !include RequiredFiles/200ResponseRoutes.json
+          400:
+            body:
+              application/json:
+                example:  !include RequiredFiles/400-BadRequest.json
+          404:
+            body:
+              application/json:
+                example:  !include RequiredFiles/404-PageNotFound.json
+                  
+                  
+                  
+
+
+                                  
+                        
+
+                
+                                              
+               
+                
+                  
+              
+          
+                      
+            

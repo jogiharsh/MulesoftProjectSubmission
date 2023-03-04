@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<configuration-properties doc:name="Configuration properties" doc:id="2c58778c-d746-4496-a6dc-19fcc09ea60f" file="config.yaml" />
+	<http:request-config name="HTTP_Request_configuration1" doc:name="HTTP Request configuration" doc:id="6b278fc3-ad9d-469e-be81-a17bb6c3105e" >
+		<http:request-connection host="${http.requester.host}" port="${http.requester.port}" />
+	</http:request-config>
+	<configuration-properties doc:name="Configuration properties" doc:id="f0ae6281-cec3-4b70-913c-0fa6a08e493f" file="config.yaml" />
+	<flow name="getRoutesFlow" doc:id="51f3eab7-c132-4fc3-a714-e534b859f95f" >
+		<logger level="INFO" doc:name="request received to getRoutes flow" doc:id="59359a32-eb1e-4bd7-b42c-e759276eca59" message="request received to getRoutes flow"/>
+		<http:request method="GET" doc:name="Request sent to ExtSystem" doc:id="b273a379-ecac-4a71-ab72-91c70a0c991d" config-ref="HTTP_Request_configuration1" path="${http.requester.routepath}"/>
+		<ee:transform doc:name="Transform Message" doc:id="6299533a-fb93-48b7-9ba0-7f23ead82d96" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload map(value,index)->{
+	"ROUTEINFO/ORIGIN": value.originLocation.locationCode,
+	"ROUTEINFO/DESTINATION": value.destinationLocation.locationCode
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<set-payload value="#[payload]" doc:name="available routes" doc:id="38470434-217b-4c2c-aa0f-a28d68665c24" mimeType="application/json"/>
+	</flow>
+</mule>

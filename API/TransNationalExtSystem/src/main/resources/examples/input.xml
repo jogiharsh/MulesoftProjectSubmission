@@ -1,0 +1,10 @@
+<soapenv:Envelope
+	xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+	xmlns:book="http://www.example.org/Bookings/">
+	<soapenv:Header/>
+	<soapenv:Body>
+		<book:getRoutes>
+			<in></in>
+		</book:getRoutes>
+	</soapenv:Body>
+</soapenv:Envelope>

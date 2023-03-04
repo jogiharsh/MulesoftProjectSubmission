@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="7b100a85-84e3-4497-b7b6-0f87335c39fb" >
+		<http:listener-connection host="${http.host}" port="${http.port}" />
+	</http:listener-config>
+	<configuration-properties doc:name="Configuration properties" doc:id="02924e46-d66d-4f64-8642-5cf847eb92d1" file="config.yaml"/>
+	<flow name="Transnational-ExtSystem" doc:id="2b5a2f16-0a67-4d94-adff-3fb58f7c44bd" >
+		<http:listener doc:name="TransnationalExtSystemFlow" doc:id="04ea7592-2cce-4c3e-86f3-c954929d8b91" config-ref="HTTP_Listener_config" path="${http.path}"/>
+		<logger level="INFO" doc:name="Request received" doc:id="98f0f717-a2df-495c-882f-9006933f5ab2" message="Request received "/>
+		<ee:transform doc:name="serviceType" doc:id="082223db-ff74-4fb6-a031-6ecfbd214900" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="serviceType" ><![CDATA[%dw 2.0
+output application/java
+---
+attributes.uriParams.'serviceType']]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<choice doc:name="serviceType" doc:id="b886b9a8-b49b-4722-b3a8-d5927c87bbdb" >
+			<when expression='#[vars.serviceType == "routes"]'>
+				<logger level="INFO" doc:name="routes flow called" doc:id="e3a962a8-cf92-47d2-b8a8-02c61b2e0caa" message="routes flow called"/>
+				<flow-ref doc:name="Transnational-GetRoutesFlow" doc:id="bf4d01f7-d0dc-425a-9bd6-1e26ce77ba1e" name="TrygetRoutesFlow"/>
+			</when>
+			<when expression='#[vars.serviceType == "schedules"]'>
+				<logger level="INFO" doc:name="schedule flow called" doc:id="64a9e2eb-358a-4203-a884-d60f14b92bac" message="schedule flow called"/>
+				<flow-ref doc:name="Transnational-GetScheduleFlow" doc:id="17673782-0ff9-41ac-8b7b-95f918d5460c" name="Transnational-GetScheduleFlow"/>
+			</when>
+			<otherwise>
+				<logger level="INFO" doc:name="URI parameter is not correct for Transnational" doc:id="61581317-d66f-4730-96d4-2b4037868df8" message="URI parameter is not correct for Transnational"/>
+			</otherwise>
+		</choice>
+		<logger level="INFO" doc:name="response sent" doc:id="5cab7ea3-f879-4dd8-9de2-06aa72896415" message="response sent  #[payload]"/>
+		<error-handler >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="5d82c9bf-9726-4c13-893a-dbf88a85f930" type="ANY">
+				<logger level="INFO" doc:name="On Error Propagate" doc:id="464182bf-1860-45a2-b1e4-0e502d56c522" message="Error Occured" />
+			</on-error-propagate>
+		</error-handler>
+	</flow>
+</mule>

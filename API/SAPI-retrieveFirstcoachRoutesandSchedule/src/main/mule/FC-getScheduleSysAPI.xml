@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:request-config name="HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="958e9d94-dfbd-408b-93c2-8cf71c958ee5" >
+		<http:request-connection host="${http.requester.host}" port="${http.requester.port}" />
+	</http:request-config>
+	<flow name="getScheduleSysAPI" doc:id="27205992-e6e7-4b8e-90b1-8e46c5af214c" >
+		<logger level="INFO" doc:name="request received fetch schedules" doc:id="f57c7e13-760b-4c13-86ca-9aed7847b49c" message="request received fetch schedules"/>
+		<http:request method="GET" doc:name="Request" doc:id="4a4ab017-b1c3-4f48-b44a-4b7424cc3a25" config-ref="HTTP_Request_configuration1" path="${http.requester.schedulepath}">
+			<http:query-params ><![CDATA[#[output application/java
+---
+{
+	companyCode : attributes.queryParams.companyCode
+}]]]></http:query-params>
+		</http:request>
+		<ee:transform doc:name="mapping" doc:id="ea7f4256-697e-421c-b0b6-1919cacce33c" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload map(value,index)->{
+	schedules:{
+		seatsAvailable:value.departureSchedules.availableSeats,
+		departureDateTime:value.departureSchedules.departureDateTime,
+		toLocation:value.departureSchedules.travelRoute.destinationLocation.locationCode,
+		fromLocation:value.departureSchedules.travelRoute.originLocation.locationCode
+				}
+	
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<set-payload value="#[payload]" doc:name="display available shedules" doc:id="2475d64a-c407-4da9-93de-9331a8988621"/>
+	</flow>
+</mule>

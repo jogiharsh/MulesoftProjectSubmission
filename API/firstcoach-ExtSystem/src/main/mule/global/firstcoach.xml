@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="b50a2b24-beea-4692-8db7-45b888ab894b" >
+		<http:listener-connection host="${http.host}" port="${http.port}" />
+	</http:listener-config>
+	<configuration-properties doc:name="Configuration properties" doc:id="970d9dd8-6bbd-4907-83ec-23b434214424" file="config.yaml" />
+	<flow name="firstcoachFlow" doc:id="688f0d1a-b49f-49b6-b106-f5a336a5f9e5" >
+		<http:listener doc:name="firstcoachFlow" doc:id="a3716540-3ddc-4dfb-9fde-7fe9e349142f" config-ref="HTTP_Listener_config" path="${http.path}"/>
+		<logger level="INFO" doc:name="Request received from system API" doc:id="d5f75f81-71fb-4596-b63f-1b15f46ca9cb" message="Request received from system API"/>
+		<set-variable value="#[attributes.uriParams.'serviceType']" doc:name="provided servicetype is stored as variable" doc:id="d3f690b1-8b16-435c-80ad-f57f649a9cc2" variableName="serviceType"/>
+		<choice doc:name="serviceType" doc:id="713c9749-7414-4a53-bcda-738057b8c547" >
+			<when expression='#[vars.serviceType == "routes"]'>
+				<logger level="INFO" doc:name="serviceType is routes" doc:id="25c583bf-698f-478d-bf17-dee58c4873d4" message="routes flow called"/>
+				<flow-ref doc:name="routes flow Referance" doc:id="67867736-39a3-4d27-9414-0c9b04be83d5" name="getRoutesFlow"/>
+				<logger level="INFO" doc:name="Available routes have been fetched" doc:id="fa2081e7-812f-4537-98fc-232c11da704e" message="Available routes have been fetched"/>
+			</when>
+			<when expression='#[vars.serviceType == "schedules"]'>
+				<logger level="INFO" doc:name="serviceType is schedule" doc:id="d8b7c046-ea6c-4850-ba5e-1e9fbfb9eb0f" message="schedule flow called"/>
+				<flow-ref doc:name="scheduleFlow Reference" doc:id="bcb01eed-d91d-488c-9d96-9e0a923a5d95" name="getScheduleFlow"/>
+				<logger level="INFO" doc:name="Available scheduleshave been fetched" doc:id="10e896eb-5870-4e9c-be63-55a836fbd4f3" message="Available scheduleshave been fetched"/>
+			</when>
+			<otherwise>
+				<logger level="INFO" doc:name="URI parameter is not correct for Transnational" doc:id="a85e63ad-262e-49d4-97ed-46bb508b600d" message="URI parameter is not correct "/>
+			</otherwise>
+		</choice>
+		<logger level="INFO" doc:name="Responce sent " doc:id="1242e890-3aa7-4ec0-9226-c7d94f7b973d" message="Responce sent for available  #[vars.serviceType] as  #[payload]"/>
+	</flow>
+</mule>

@@ -1,0 +1,14 @@
+http:
+  listener:
+    host: "0.0.0.0"
+    port: "9001"
+  firstCoach:
+    requester:
+      host: "0.0.0.0"
+      port: "8095"
+      path: "/firstCoach"
+  transNational:
+    requester:
+      host: "0.0.0.0"
+      port: "8085"
+      path: "/transNational"

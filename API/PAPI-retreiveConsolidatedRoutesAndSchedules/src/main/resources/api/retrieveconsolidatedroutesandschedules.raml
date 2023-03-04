@@ -1,0 +1,77 @@
+#%RAML 1.0
+title: RetrieveConsolidatedRoutesAndSchedules
+description: To consolidate routes from multiple transport providers
+types:
+  getDataType: !include /dataType/getDataType.raml
+  scheduleDataType: !include  /dataType/ScheduleDataType.raml
+/booking:
+  /{transportType}:
+    /routes:
+      get:
+        headers:
+          companyCode:
+            required: false
+            type: string
+        queryParameters:
+          departureLocationCode:
+            required: false
+            type: string
+        responses:
+          200:
+            body:
+              application/json:
+                type: getDataType
+                example: !include /RequiredFiles/200-GetRoutes.json     
+          400:
+            body:
+              application/json:
+                example: !include /RequiredFiles/400-BadRequest.json
+          404:
+            body:
+              application/json:
+                example: !include /RequiredFiles/404-PageNotFound.json
+    /schedules:
+      get:
+        headers:
+          companyCode:
+            required: true
+            type: string
+        queryParameters:
+          departurLocationCode:
+            required: false
+            type: string
+          destinationLocationCode:
+            required: false
+            type: string
+          requestTimezone:
+            required: false
+            type: string
+        responses:
+          200:
+            body:
+              application/json:
+                type: scheduleDataType
+                example: !include /RequiredFiles/200-getSchedules.json 
+          400:
+            body:
+              application/json:
+                example: !include /RequiredFiles/400-BadRequest.json
+          404:
+            body:
+              application/json:
+                example: !include /RequiredFiles/404-PageNotFound.json
+
+          
+
+
+
+           
+                  
+                        
+
+
+                         
+                  
+
+          
+        

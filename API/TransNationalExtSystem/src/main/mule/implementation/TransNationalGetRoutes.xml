@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
+	<http:request-config name="HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="0261c3fc-7f28-4b9c-98b7-6d977a66e607" basePath="/Bookings/BookingsSOA" >
+		<http:request-connection host="0.0.0.0" port="9999" />
+	</http:request-config>
+	<flow name="TrygetRoutesFlow" doc:id="b16646a7-f506-4361-ac16-6d294807a15b" >
+		<logger level="INFO" doc:name="request recieved to get the routes" doc:id="a69d66dd-5cbb-4f8c-bb00-fedc8530c649" message="request recieved to get the routes"/>
+		<set-payload value='[ { "originLocation": { "locationCode": "BEN-SG" }, "destinationLocation": { "locationCode": "KLG-MY" } } ]' doc:name="availableRoutes" doc:id="432ad069-883d-4c72-aba2-f78ff1c6088c" mimeType="application/json"/>
+	</flow>
+</mule>

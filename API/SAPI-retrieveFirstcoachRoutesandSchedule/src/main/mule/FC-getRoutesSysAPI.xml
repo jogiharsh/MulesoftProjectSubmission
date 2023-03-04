@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:request-config name="HTTP_Request_configuration1" doc:name="HTTP Request configuration" doc:id="958e9d94-dfbd-408b-93c2-8cf71c958ee5" >
+		<http:request-connection host="${http.requester.host}" port="${http.requester.port}" />
+	</http:request-config>
+	<configuration-properties doc:name="Configuration properties" doc:id="b0f2e5fe-f609-4ee0-9aeb-96cd20578a23" file="config.yaml" />
+	<flow name="getRoutesSysAPI" doc:id="27205992-e6e7-4b8e-90b1-8e46c5af214c" >
+		<logger level="INFO" doc:name="request received for routes" doc:id="f57c7e13-760b-4c13-86ca-9aed7847b49c" message="request received to fetch routes"/>
+		<http:request method="GET" doc:name="Request made to the ExtSystem to fetch the routes" doc:id="4a4ab017-b1c3-4f48-b44a-4b7424cc3a25" config-ref="HTTP_Request_configuration1" path="${http.requester.routepath}" >
+			<http:query-params ><![CDATA[#[output application/java
+---
+{
+	companyCode : attributes.queryParams.companyCode
+}]]]></http:query-params>
+		</http:request>
+		<ee:transform doc:name="mapping" doc:id="58a34b28-9e91-4c91-8348-b3cb6443fe13" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload map(value,index)->{
+	departureLocationCode: value.originLocation.locationCode,
+	arrivalLocationCode: value.destinationLocation.locationCode
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<set-payload value="#[payload]" doc:name="display available routes" doc:id="2475d64a-c407-4da9-93de-9331a8988621" />
+	</flow>
+</mule>

@@ -1,0 +1,9 @@
+http:
+  listener:
+    host: "0.0.0.0"
+    port: "8085"
+  requester:
+    host: "0.0.0.0"
+    port: "8081"
+    routepath: "/transnational/routes"
+    schedulepath: "/transnational/schedules"
